@@ -7,9 +7,7 @@ lines = open('data/day2.txt', 'r').read().splitlines()
 GAME_REGEX = re.compile('[:;] ')
 COLOR_REGEX = re.compile('(\d+) (red|green|blue)')
 
-RED_MAX = 12
-GREEN_MAX = 13
-BLUE_MAX = 14
+MAX_ALLOWED = {'red': 12, 'green': 13, 'blue': 14}
 
 game_id_sum = 0
 power_sum = 0
@@ -30,12 +28,11 @@ for game in lines:
             color_map[k] = int(v)
 
         # Part 1
-        if color_map['red'] > RED_MAX or color_map['green'] > GREEN_MAX or color_map['blue'] > BLUE_MAX:
+        if any(color_map[color] > MAX_ALLOWED[color] for color in ('red', 'green', 'blue')):
             game_possible = False
 
         # Part 2
-        for color in ('red', 'green', 'blue'):
-            min_required[color] = max(min_required[color], color_map[color])
+        min_required = {color: max(min_required[color], color_map[color]) for color in ('red', 'green', 'blue')}
     
     # Part 1
     if game_possible:

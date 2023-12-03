@@ -1,6 +1,6 @@
 ############ BRYT UT TILL EGEN FIL ##############
 
-from typing import Any, Sequence
+from typing import Any, Sequence, Generic, TypeVar
 
 class Cell:
     def __init__(self, contents: Any):
@@ -9,8 +9,10 @@ class Cell:
     def __repr__(self):
         return f"{self.contents}"
 
-class GenericGrid:
-    def __init__(self, data: Sequence[Sequence[Cell]], wrapping = False, default_value = None):
+T = TypeVar('T', bound=Cell)
+
+class GenericGrid(Generic[T]):
+    def __init__(self, data: Sequence[Sequence[T]], wrapping = False, default_value = None):
         self.data = data
         self.row_count = len(self.data)
         self.col_count = len(self.data[0]) if len(self.data) > 0 else 0
@@ -20,35 +22,33 @@ class GenericGrid:
         self.wrapping = wrapping
         self.default_value = default_value
 
-    def row(self, y) -> Sequence[Cell]:
+    def row(self, y) -> Sequence[T]:
         return self.data[y]
 
-    def rows(self) -> Sequence[Sequence[Cell]]:
+    def rows(self) -> Sequence[Sequence[T]]:
         return self.data
 
-    def cols(self) -> Sequence[Sequence[Cell]]:
+    def cols(self) -> Sequence[Sequence[T]]:
         # TODO: implement
         assert(False)
 
-    def cell_at(self, x, y) -> Cell | None:
+    def cell_at(self, x, y) -> T | None:
         if x >= 0 and y >= 0 and x < self.col_count and y < self.row_count:
             return self.data[y][x]
         elif self.wrapping:
             # TODO: implement -- using Python's default indexing behavior where possible
             assert(False)
         elif x < 0 or y < 0:
-            # TODO: should this return None or an empty Cell (e.g. Cell.empty == True)?
             return None
         else:
             # Not wrapping and x >= self.col_count or y >= self.row_count
-            # TODO: should this return None or an empty Cell (e.g. Cell.empty == True)?
             return None
     
     def contents_at(self, x, y) -> Any:
         cell = self.cell_at(x, y)
         return cell.contents if cell else self.default_value
 
-    def neighbors(self, x, y) -> list[Cell | None]:
+    def neighbors(self, x, y) -> list[T | None]:
         """ Return a list of all neighboring cells, wrapping or inserting default valued cells if needed. """
         cells = []
         for offset_x in (-1, 0, 1):
@@ -131,7 +131,6 @@ if __name__=='__main__':
             sum += group_value
 
     print(f"Part 1: {sum}")
-
 
     # Part 2: locate all *, skip if there aren't exactly two groups adjacent, multiply the two values
     sum = 0

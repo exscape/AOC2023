@@ -34,12 +34,19 @@ class GenericGrid(Generic[T]):
         if x >= 0 and y >= 0 and x < self.col_count and y < self.row_count:
             return self.data[y][x]
         elif self.wrapping:
-            # TODO: implement -- using Python's default indexing behavior where possible
-            assert(False)
-        elif x < 0 or y < 0:
-            return None
+            # Allow infinite wrapping in all directions
+            if x >= self.col_count:
+                x = x % self.col_count
+            elif x <= -self.col_count:
+                x = x % -self.col_count
+            if y >= self.row_count:
+                y = y % self.row_count
+            elif y <= -self.row_count:
+                y = y % -self.row_count
+
+            return self.data[y][x]
         else:
-            # Not wrapping and x >= self.col_count or y >= self.row_count
+            # Not wrapping and out of bounds
             return None
     
     def contents_at(self, x, y) -> Any:

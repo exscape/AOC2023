@@ -4,8 +4,8 @@ from collections import defaultdict
 
 lines = open('data/day2.txt', 'r').read().splitlines()
 
-GAME_REGEX = re.compile('[:;] ')
-COLOR_REGEX = re.compile('(\d+) (red|green|blue)')
+GAME_REGEX = re.compile(r'[:;] ')
+COLOR_REGEX = re.compile(r'(\d+) (red|green|blue)')
 
 MAX_ALLOWED = {'red': 12, 'green': 13, 'blue': 14}
 

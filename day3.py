@@ -1,6 +1,6 @@
 from itertools import takewhile
 
-from common import CharacterGrid, Cell
+from common import CharacterGrid
 
 class GroupedCharacterGrid(CharacterGrid):
     def __init__(self, lines):
@@ -23,7 +23,7 @@ class GroupedCharacterGrid(CharacterGrid):
                     digit_cell.group_id = id
 
                 # Store them as a group
-                digits = list(map(lambda c: c.contents, digit_cells))
+                digits = [c.contents for c in digit_cells]
                 value = int("".join(digits))
                 self.groups[id] = value
                 x += len(digits)
@@ -63,8 +63,8 @@ if __name__=='__main__':
     for y in range(grid.row_count):
         for x in range(grid.col_count):
             if (c := grid.cell_at(x, y)) and c.contents == '*':
-                digits = filter(lambda c: c and c.contents.isdigit(), grid.neighbors(x, y))
-                group_ids = set(map(lambda c: c.group_id, digits))
+                digits = [cell for cell in grid.neighbors(x, y) if cell and cell.contents.isdigit()]
+                group_ids = {c.group_id for c in digits}
 
                 # Skip if there aren't exactly two groups adjacent
                 if len(group_ids) != 2:

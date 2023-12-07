@@ -20,7 +20,7 @@ if __name__=='__main__':
     NUMBER_REGEX = re.compile(r'\d+')
     times = NUMBER_REGEX.findall(lines[0])
     records = NUMBER_REGEX.findall(lines[1])
-    races = list(map(lambda x: Race(*map(int, x)), zip(times, records)))
+    races = [Race(*[int(val) for val in race]) for race in zip(times, records)]
 
     part_2_race = Race(int("".join(times)), int("".join(records)))
 

@@ -4,7 +4,7 @@ digitMap = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "sev
 
 sum = 0
 for line in lines:
-    digits = list(filter(str.isdigit, line))
+    digits = [c for c in line if c.isdigit()]
     sum += int(digits[0] + digits[-1])
 
 print(f"Part 1: {sum}")

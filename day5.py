@@ -11,7 +11,7 @@ class Mapping:
     length: int
 
     def __init__(self, s):
-        (dest, self.src, self.length) = map(int, s.split(" "))
+        (dest, self.src, self.length) = [int(n) for n in s.split(" ")]
         self.offset = dest - self.src
 
 @dataclass
@@ -63,9 +63,9 @@ def parse_input(filename):
     lines = open(filename).read().splitlines()
 
     # For part 1
-    seeds = list(map(int, NUMBER_REGEX.findall(lines[0])))
+    seeds = [int(n) for n in NUMBER_REGEX.findall(lines[0])]
     # For part 2
-    seed_ranges = list(map(lambda x: SeedRange(*x), itertools.batched(seeds, 2)))
+    seed_ranges = [SeedRange(*x) for x in itertools.batched(seeds, 2)]
 
     # Group the lines into the different maps (like splitting a string on whitespace)
     def starts_with_digit(line):
@@ -76,9 +76,8 @@ def parse_input(filename):
     for group in grouped_lines:
         # group now looks something like: ['50 98 2', '52 50 48']
         # Each entry in such a list becomes a Mapping, and all of them together become a Map (e.g. a seed-to-soil map).
-        # So, somewhat confusingly, we use Python's map() to to create a list of Mapping instances, stored in a Map.
         # This loop *could* be replaced with a one-liner, but I think that would be pushing it too far.
-        maps.append(Map(list(map(Mapping, group))))
+        maps.append(Map([Mapping(g) for g in group]))
     
     return (seeds, seed_ranges, maps)
 
@@ -94,7 +93,7 @@ if __name__=='__main__':
 
     # Part 1
     # Simply run location_from_seed on each seed, and pick the lowest value.
-    print(f"Part 1: {min(map(lambda x: location_from_seed(x, maps), seeds))}")
+    print(f"Part 1: {min([location_from_seed(seed, maps) for seed in seeds])}")
 
     # Part 2
     # Calculate a set of seed ranges that all use the same "mapping path", so to speak.
@@ -119,4 +118,4 @@ if __name__=='__main__':
             seed_ranges.append(SeedRange(sr.start + int(max_overhead) + 1, sr.length - int(max_overhead) - 1))
 
     # We finally have the seed values. Map each of them to a location and extract the lowest value.
-    print(f"Part 2: {min(map(lambda x: location_from_seed(x, maps), seeds))}")
+    print(f"Part 2: {min([location_from_seed(seed, maps) for seed in seeds])}")

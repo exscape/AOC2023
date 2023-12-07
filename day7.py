@@ -81,7 +81,7 @@ class Hand:
         return self.card_values < other.card_values
 
 def calculate_winnings(lines, joker = False):
-    hands = sorted(map(lambda x: Hand(x, joker=joker), lines))
+    hands = sorted([Hand(line, joker=joker) for line in lines])
     winnings = 0
     for i, hand in enumerate(hands):
         rank = i + 1

@@ -26,27 +26,25 @@ class Hand:
 
     @classmethod
     def calculate_hand_type(cls, card_values, joker = False):
-        jokers = card_values.count(1)
+        jokers = card_values.count(1) if joker else 0
 
         # Groups a hand like [13, 13, 6, 7, 7] => [[6], [7, 7], [13, 13]]
-        grouped = [list(g) for k, g in itertools.groupby(sorted(card_values))]
+        grouped = [list(g) for k, g in itertools.groupby(sorted(card_values)) if not (joker and k == 1)]
 
         # Sort by largest group first, highest value second; the above becomes [[13, 13], [7, 7], [6]]
         grouped_sorted = sorted(grouped, key=lambda x: (len(x), x[0]), reverse=True)
 
-        # If the largest group is jokers, rewrite them into instances of the second-largest group,
-        # or the math below will fail. For example, [[1, 1, 1], [4], [2]] => [[4, 4, 4, 4], [2]]
-        # The length check is needed to cover the case of 5 jokers.
-        if joker and grouped_sorted[0][0] == 1 and len(grouped_sorted) > 1:
-            grouped_sorted[0] = [grouped_sorted[1][0]] * (len(grouped_sorted[1]) + jokers)
-            del grouped_sorted[1]
-            jokers = 0 # They're already accounted for, don't count them twice below
+        # Handle jokers, if present. Increase the size of the largest (or highest-valued, if all are 1-sized) group.
+        # This maps e.g. [[12, 12], [4], [3]] => [[12, 12, 12], [4], [3]]
+        # ... since the jokers aren't in the grouped array.
+        if 0 < jokers < 5:
+            grouped_sorted[0] = [grouped_sorted[0][0]] * (len(grouped_sorted[0]) + jokers)
 
         # Calculate the sizes of the two first groups (at most two groups are needed for a hand, except high card)
-        first_group = len(grouped_sorted[0]) + jokers
+        first_group = len(grouped_sorted[0]) if len(grouped_sorted) > 0 else 0
         second_group = len(grouped_sorted[1]) if len(grouped_sorted) > 1 else 0
 
-        if first_group >= 5:
+        if first_group == 5 or jokers == 5:
             hand_type = HandType.FiveOfAKind
         elif first_group == 4:
             hand_type = HandType.FourOfAKind
@@ -61,7 +59,7 @@ class Hand:
         else:
             # A hand with jokers can never give a high card hand
             assert(jokers == 0)
-            # A high card hand can't have pairs, so the 5 cards must be unique and so non-grouped
+            # A high card hand must have 5 unique, and so non-grouped, cards
             assert(len(grouped_sorted) == 5)
 
             hand_type = HandType.HighCard

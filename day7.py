@@ -83,8 +83,7 @@ class Hand:
 def calculate_winnings(lines, joker = False):
     hands = sorted([Hand(line, joker=joker) for line in lines])
     winnings = 0
-    for i, hand in enumerate(hands):
-        rank = i + 1
+    for rank, hand in enumerate(hands, start=1):
         winnings += rank * hand.bid
     return winnings
 

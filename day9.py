@@ -21,7 +21,7 @@ def solve(histories):
 
 if __name__=='__main__':
     lines = open('data/day9.txt').read().splitlines()
-    histories = [[int(n) for n in history] for history in [line.split(" ") for line in lines]]
+    histories = [map(int, history) for history in [line.split(" ") for line in lines]]
 
     (part1, part2) = solve(histories)
     print(f"Part 1: {part1}")

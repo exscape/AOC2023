@@ -12,7 +12,7 @@ if __name__=='__main__':
     score = 0
     for line in lines:
         card, winning, my = re.split('[:|]', line)
-        card_number = int(NUMBER_REGEX.search(card).group(0))
+        card_number = int(NUMBER_REGEX.search(card).group(0)) # type: ignore
         winning_numbers = NUMBER_REGEX.findall(winning)
         my_numbers = NUMBER_REGEX.findall(my)
 

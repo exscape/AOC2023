@@ -12,7 +12,7 @@ class GroupedCharacterGrid(CharacterGrid):
             # Ugly, ugly. I want a C-style for loop here (to easily skip multiple iterations with x += ...)
             x = -1
             while (x := x + 1) < self.col_count:
-                if not self.contents_at(x, y).isdigit():
+                if not self.contents_at((x, y)).isdigit():
                     continue
 
                 # This is the first digit of a number; let's fetch the rest
@@ -34,7 +34,7 @@ class GroupedCharacterGrid(CharacterGrid):
         return self.groups
 
 def cell_contains_symbol(cell):
-    return cell and cell.contents != '.' and not cell.contents.isdigit() 
+    return cell and cell.contents != '.' and not cell.contents.isdigit()
 
 if __name__=='__main__':
     lines = open('data/day3.txt').read().splitlines()
@@ -44,8 +44,8 @@ if __name__=='__main__':
     groups_with_adjacent_symbol = set()
     for y in range(grid.row_count):
         for x in range(grid.col_count):
-            if (c := grid.cell_at(x, y)) and c.contents.isdigit():
-                if any([cell_contains_symbol(cell) for cell in grid.neighbors(x, y)]):
+            if (c := grid.cell_at((x, y))) and c.contents.isdigit():
+                if any([cell_contains_symbol(cell) for cell in grid.neighbors((x, y))]):
                     # Digit has an adjacent symbol
                     groups_with_adjacent_symbol.add(c.group_id)
 
@@ -62,8 +62,8 @@ if __name__=='__main__':
     all_groups = grid.all_groups()
     for y in range(grid.row_count):
         for x in range(grid.col_count):
-            if (c := grid.cell_at(x, y)) and c.contents == '*':
-                digits = [cell for cell in grid.neighbors(x, y) if cell and cell.contents.isdigit()]
+            if (c := grid.cell_at((x, y))) and c.contents == '*':
+                digits = [cell for cell in grid.neighbors((x, y)) if cell and cell.contents.isdigit()]
                 group_ids = {c.group_id for c in digits}
 
                 # Skip if there aren't exactly two groups adjacent

@@ -1,8 +1,9 @@
-from typing import Any, Sequence, Generic, TypeVar
+from typing import Any, Sequence, Generic, TypeVar, Tuple
 
 class Cell:
-    def __init__(self, contents: Any):
+    def __init__(self, contents: Any, position = None):
         self.contents = contents
+        self.position = position
 
     def __repr__(self):
         return f"{self.contents}"
@@ -10,7 +11,7 @@ class Cell:
 T = TypeVar('T', bound=Cell)
 
 class GenericGrid(Generic[T]):
-    def __init__(self, data: Sequence[Sequence[T]], wrapping = False, default_value = None):
+    def __init__(self, data: Sequence[Sequence[T]], wrapping = False, default_value: Any = None):
         self.data = data
         self.row_count = len(self.data)
         self.col_count = len(self.data[0]) if len(self.data) > 0 else 0
@@ -30,7 +31,8 @@ class GenericGrid(Generic[T]):
         # TODO: implement
         assert(False)
 
-    def cell_at(self, x, y) -> T | None:
+    def cell_at(self, position: Tuple[int, int]) -> T | None:
+        (x, y) = position
         if x >= 0 and y >= 0 and x < self.col_count and y < self.row_count:
             return self.data[y][x]
         elif self.wrapping:
@@ -48,28 +50,36 @@ class GenericGrid(Generic[T]):
         else:
             # Not wrapping and out of bounds
             return None
-    
-    def contents_at(self, x, y) -> Any:
-        cell = self.cell_at(x, y)
+
+    def contents_at(self, position: Tuple[int, int]) -> Any:
+        cell = self.cell_at(position)
         return cell.contents if cell else self.default_value
 
-    def neighbors(self, x, y) -> list[T | None]:
+    def neighbors(self, position: Tuple[int, int], include_diagonals=True) -> list[T | None]:
         """ Return a list of all neighboring cells, wrapping or inserting default valued cells if needed. """
         cells = []
-        for offset_x in (-1, 0, 1):
-            for offset_y in (-1, 0, 1):
-                if not (offset_x == 0 and offset_y == 0):
-                    cells.append(self.cell_at(x + offset_x, y + offset_y))
+        (x, y) = position
+        for offset_y in (-1, 0, 1):
+            for offset_x in (-1, 0, 1):
+                if offset_x == 0 and offset_y == 0:
+                    continue
+                if not include_diagonals and abs(offset_x) == 1 and abs(offset_y) == 1:
+                    continue
+                cells.append(cell := self.cell_at((x + offset_x, y + offset_y)))
+                if cell:
+                    assert(cell.position == (x + offset_x, y + offset_y))
 
-        assert(len(cells) == 8)
+        assert(len(cells) == 8 if include_diagonals else 4)
         return cells
 
 class CharacterGrid(GenericGrid):
     """ Each cell is one character, usually ASCII, created from a list of strings """
     def __init__(self, lines: Sequence[str], wrapping = False, default_value = None):
         data: list[list[Cell]] = []
-        for line in lines:
+        for y, line in enumerate(lines):
             row = list(map(Cell, list(line)))
+            for x, cell in enumerate(row):
+                cell.position = (x, y)
             data.append(row)
 
         super().__init__(data, wrapping, default_value)

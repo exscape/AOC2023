@@ -27,6 +27,9 @@ class GenericGrid(Generic[T]):
     def row(self, y) -> list[T]:
         return self.data[y]
 
+    def col(self, x) -> list[T]:
+       return [self.data[y][x] for y in range(self.row_count)]
+
     def rows(self) -> list[list[T]]:
         return self.data
 

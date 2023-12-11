@@ -1,4 +1,6 @@
+import itertools
 from enum import IntFlag
+
 from common import GenericGrid, Cell
 
 class Dir(IntFlag):
@@ -32,6 +34,7 @@ class Pipe:
     def __init__(self, ch):
         self.ch = ch
         self.dirs = Dir.from_char(ch)
+        self.part_of_main_loop = False
 
     def connects(self, other_dir):
         """ Does this pipe allow movement in the direction other_dir? """
@@ -101,6 +104,7 @@ class PipeGrid(GenericGrid):
         steps = 0
 
         while True: # Poor man's do-while loop (I really wish Python implemented them)
+            self.contents_at(pos).part_of_main_loop = True # Used for part 2
             pos = next_pos(pos, outgoing_dir)
             last_dir = outgoing_dir
             outgoing_dir = next_dir(self.dirs_at(pos), last_dir)
@@ -108,11 +112,46 @@ class PipeGrid(GenericGrid):
             if pos == self.start_coordinates():
                 return steps // 2
 
+    def is_inside_boundary(self, position):
+        """" True if a position is within the outer boundary of the loop -- NOT necessarily enclosed """
+
+        def is_pipe(cell):
+            return cell.contents.part_of_main_loop
+
+        # If we hit part of the loop in all four directions, we're inside the loop boundary.
+        # This area might not count as *enclosed*, though.
+        x, y = position
+        return not is_pipe(self.cell_at(position)) and \
+               any([is_pipe(cell) for cell in self.row(y)[0:x]]) and \
+               any([is_pipe(cell) for cell in self.row(y)[x+1:]]) and \
+               any([is_pipe(cell) for cell in self.col(x)[0:y]]) and \
+               any([is_pipe(cell) for cell in self.col(x)[y+1:]])
+
+    def num_enclosed(self):
+        """ Return the number of positions that are actually enclosed by the loop. """
+
+        candidates = [cell.position for cell in itertools.chain.from_iterable(self.rows()) if self.is_inside_boundary(cell.position)]
+        enclosed = 0
+        for candidate in candidates:
+            # Shoot a ray in any direction, and count whether it crosses the pipe an odd or even number of times.
+            # Odd = enclosed, even = not enclosed.
+            x, y = candidate
+            if len([cell for cell in self.row(y)[x+1:] if cell.contents.part_of_main_loop and cell.contents.ch in '|F7']) % 2 == 1:
+                enclosed += 1
+
+        return enclosed
+
 def solve(lines):
     grid = PipeGrid(lines, wrapping=False, default_value=None)
-    return grid.most_steps()
+    most_steps = grid.most_steps()
+    num_enclosed = grid.num_enclosed()
+
+    return (most_steps, num_enclosed)
 
 if __name__=='__main__':
     main_problem = open('data/day10.txt').read()
     lines = main_problem.splitlines()
-    print(f"Part 1: {solve(lines)}")
+
+    part1, part2 = solve(lines)
+    print(f"Part 1: {part1}")
+    print(f"Part 2: {part2}")

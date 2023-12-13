@@ -136,7 +136,7 @@ class PipeGrid(GenericGrid):
             # Shoot a ray in any direction, and count whether it crosses the pipe an odd or even number of times.
             # Odd = enclosed, even = not enclosed.
             x, y = candidate
-            if len([cell for cell in self.row(y)[x+1:] if cell.contents.part_of_main_loop and cell.contents.ch in '|F7']) % 2 == 1:
+            if sum(1 for cell in self.row(y)[x+1:] if cell.contents.part_of_main_loop and cell.contents.ch in '|F7') % 2 == 1:
                 enclosed += 1
 
         return enclosed

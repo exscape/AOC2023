@@ -45,7 +45,7 @@ if __name__=='__main__':
     for y in range(grid.row_count):
         for x in range(grid.col_count):
             if (c := grid.cell_at((x, y))) and c.contents.isdigit():
-                if any([cell_contains_symbol(cell) for cell in grid.neighbors((x, y))]):
+                if any(cell_contains_symbol(cell) for cell in grid.neighbors((x, y))):
                     # Digit has an adjacent symbol
                     groups_with_adjacent_symbol.add(c.group_id)
 

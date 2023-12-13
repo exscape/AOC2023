@@ -5,7 +5,7 @@ def extrapolate_history(history):
     # Generate a list of differences: [[1, 3, 6, 10, 15, 21], [2, 3, 4, 5, 6], [1, 1, 1, 1], [0, 0, 0]]
     # diffs[0] contains the original values, followed by each set of differences in turn
     diffs = [deque(history)]
-    while not all([x == 0 for x in diffs[-1]]):
+    while not all(x == 0 for x in diffs[-1]):
         diffs.append(deque([b-a for (a, b) in itertools.pairwise(diffs[-1])]))
 
     # Work backwards through the lists adding up values
@@ -17,7 +17,7 @@ def extrapolate_history(history):
 
 def solve(histories):
     histories = [extrapolate_history(history) for history in histories]
-    return [sum([h[-1] for h in histories]), sum([h[0] for h in histories])]
+    return [sum(h[-1] for h in histories), sum(h[0] for h in histories)]
 
 if __name__=='__main__':
     lines = open('data/day9.txt').read().splitlines()

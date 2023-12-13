@@ -27,9 +27,8 @@ def solve_part1(lines):
     grid.expand()
     galaxy_positions = [cell.position for cell in itertools.chain.from_iterable(grid.rows()) if cell.contents == '#']
     galaxy_pairs = list(itertools.combinations(galaxy_positions, 2))
-    distances = [taxicab_distance(a, b) for a, b in galaxy_pairs]
 
-    return sum(distances)
+    return sum(taxicab_distance(a, b) for a, b in galaxy_pairs)
 
 def solve_part2(lines):
     """ Simulate expansion by modifying the galaxy coordinates accordingly """
@@ -47,9 +46,8 @@ def solve_part2(lines):
                 galaxy_positions[i] = (pos[0] + 999999, pos[1])
 
     galaxy_pairs = list(itertools.combinations(galaxy_positions, 2))
-    distances = [taxicab_distance(a, b) for a, b in galaxy_pairs]
 
-    return sum(distances)
+    return sum(taxicab_distance(a, b) for a, b in galaxy_pairs)
 
 if __name__=='__main__':
     lines = open('data/day11.txt').read().splitlines()

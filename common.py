@@ -8,6 +8,12 @@ class Cell:
     def __repr__(self):
         return f"{self.contents}"
 
+    def __eq__(self, other):
+        if other:
+            return self.contents == other.contents
+        else:
+            return False
+
 T = TypeVar('T', bound=Cell)
 
 def taxicab_distance(from_: Tuple[int, int], to: Tuple[int, int]):
@@ -24,11 +30,32 @@ class GenericGrid(Generic[T]):
         self.wrapping = wrapping
         self.default_value = default_value
 
-    def row(self, y) -> list[T]:
-        return self.data[y]
+    @classmethod
+    def wrap_coordinate(cls, c, max_count):
+        """ Transform a coordinate to allow for infinite wrapping, e.g. grid.row(-123) for a 50-row grid """
+        if c >= max_count:
+            c = c % max_count
+        elif c <= -max_count:
+            c = c % -max_count
+        return c
 
-    def col(self, x) -> list[T]:
-       return [self.data[y][x] for y in range(self.row_count)]
+    def row(self, y) -> list[T|None]:
+        if y >= 0 and y < self.row_count:
+            return self.data[y]
+        elif self.wrapping:
+            y = GenericGrid.wrap_coordinate(y, self.row_count)
+            return self.data[y]
+        else:
+            return [None] * self.col_count
+
+    def col(self, x) -> list[T|None]:
+        if x >= 0 and x < self.col_count:
+            return [self.data[y][x] for y in range(self.row_count)]
+        elif self.wrapping:
+            x = GenericGrid.wrap_coordinate(x, self.col_count)
+            return [self.data[y][x] for y in range(self.row_count)]
+        else:
+            return [None] * self.row_count
 
     def rows(self) -> list[list[T]]:
         return self.data
@@ -42,15 +69,8 @@ class GenericGrid(Generic[T]):
             return self.data[y][x]
         elif self.wrapping:
             # Allow infinite wrapping in all directions
-            if x >= self.col_count:
-                x = x % self.col_count
-            elif x <= -self.col_count:
-                x = x % -self.col_count
-            if y >= self.row_count:
-                y = y % self.row_count
-            elif y <= -self.row_count:
-                y = y % -self.row_count
-
+            x = GenericGrid.wrap_coordinate(x, self.col_count)
+            y = GenericGrid.wrap_coordinate(y, self.row_count)
             return self.data[y][x]
         else:
             # Not wrapping and out of bounds

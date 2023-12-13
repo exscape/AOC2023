@@ -63,6 +63,12 @@ class GenericGrid(Generic[T]):
     def cols(self) -> list[list[T]]:
         return [list(x) for x in zip(*self.data)]
 
+    def transpose(self):
+        self.data = self.cols()
+        self.row_count = len(self.data)
+        self.col_count = len(self.data[0]) if len(self.data) > 0 else 0
+        self.recalculate_positions()
+
     def cell_at(self, position: Tuple[int, int]) -> T | None:
         (x, y) = position
         if x >= 0 and y >= 0 and x < self.col_count and y < self.row_count:

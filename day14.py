@@ -1,6 +1,5 @@
 # pyright: reportOptionalMemberAccess=false
 import itertools
-from copy import deepcopy
 from common import CharacterGrid
 
 class StoneGrid(CharacterGrid):
@@ -32,14 +31,15 @@ def solve(lines):
     seen_grids = []
 
     for i in range(1_000_000_000):
-        seen_grids.append(deepcopy(grid))
+        seen_grids.append(grid.dump())
         grid.perform_cycle()
 
-        if grid in seen_grids:
-            prev_index = seen_grids.index(grid) - 1
+        dump = grid.dump()
+        if dump in seen_grids:
+            prev_index = seen_grids.index(dump) - 1
             cycle_length = i - prev_index
             answer_index = prev_index + ((1_000_000_000_000) - prev_index) % cycle_length
-            part2 = seen_grids[answer_index].north_beam_load()
+            part2 = StoneGrid(seen_grids[answer_index].splitlines()).north_beam_load()
 
             return (part1, part2)
 

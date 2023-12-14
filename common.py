@@ -168,5 +168,10 @@ class CharacterGrid(GenericGrid):
         super().__init__(data, wrapping, default_value)
 
     def print(self):
+        print(self.dump())
+
+    def dump(self):
+        lines = []
         for row in self.data:
-            print(''.join(map(lambda c: c.contents, row)))
+            lines.append(''.join(map(lambda c: c.contents, row)))
+        return '\n'.join(lines)

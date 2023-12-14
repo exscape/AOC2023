@@ -1,7 +1,7 @@
 import itertools
 from enum import IntFlag
 
-from common import GenericGrid, Cell
+from common import GenericGrid
 
 class Dir(IntFlag):
     EMPTY = 0
@@ -69,7 +69,7 @@ class PipeGrid(GenericGrid):
         for y, line in enumerate(lines):
             row = []
             for x, ch in enumerate(line):
-                row.append(Cell(Pipe(ch), (x, y)))
+                row.append(Pipe(ch))
                 if ch == 'S':
                     self._start_coordinates = (x, y)
             data.append(row)
@@ -78,18 +78,19 @@ class PipeGrid(GenericGrid):
 
         # Figure out the actual type of pipe at the starting location (S) based on the neighboring pipes
         my_directions = Dir.EMPTY
-        (N, W, E, S) = [cell.contents if cell else None for cell in self.neighbors(self.start_coordinates(), include_diagonals=False)]
+        (N, W, E, S) = self.neighbors(self.start_coordinates(), include_diagonals=False)
         if N and N.connects(Dir.S): my_directions |= Dir.N
         if S and S.connects(Dir.N): my_directions |= Dir.S
         if E and E.connects(Dir.W): my_directions |= Dir.E
         if W and W.connects(Dir.E): my_directions |= Dir.W
 
         # Finally, overwrite the S with a pipe of the correct type
-        self.cell_at(self.start_coordinates()).contents = Pipe(my_directions.to_char()) # type: ignore
+        x, y = self.start_coordinates()
+        self.data[y][x] = Pipe(my_directions.to_char())
 
     def dirs_at(self, position):
         """ Which directions are allowed for the pipe at the given position? """
-        return self.cell_at(position).contents.dirs # type: ignore
+        return self.cell_at(position).dirs # type: ignore
 
     def start_coordinates(self):
         assert(self._start_coordinates is not None)
@@ -104,7 +105,7 @@ class PipeGrid(GenericGrid):
         steps = 0
 
         while True: # Poor man's do-while loop (I really wish Python implemented them)
-            self.contents_at(pos).part_of_main_loop = True # Used for part 2
+            self.cell_at(pos).part_of_main_loop = True # type: ignore
             pos = next_pos(pos, outgoing_dir)
             last_dir = outgoing_dir
             outgoing_dir = next_dir(self.dirs_at(pos), last_dir)
@@ -116,27 +117,27 @@ class PipeGrid(GenericGrid):
         """" True if a position is within the outer boundary of the loop -- NOT necessarily enclosed """
 
         def is_pipe(cell):
-            return cell.contents.part_of_main_loop
+            return cell.part_of_main_loop
 
         # If we hit part of the loop in all four directions, we're inside the loop boundary.
         # This area might not count as *enclosed*, though.
         x, y = position
         return not is_pipe(self.cell_at(position)) and \
-               any([is_pipe(cell) for cell in self.row(y)[0:x]]) and \
-               any([is_pipe(cell) for cell in self.row(y)[x+1:]]) and \
-               any([is_pipe(cell) for cell in self.col(x)[0:y]]) and \
-               any([is_pipe(cell) for cell in self.col(x)[y+1:]])
+               any(is_pipe(cell) for cell in self.row(y)[0:x]) and \
+               any(is_pipe(cell) for cell in self.row(y)[x+1:]) and \
+               any(is_pipe(cell) for cell in self.col(x)[0:y]) and \
+               any(is_pipe(cell) for cell in self.col(x)[y+1:])
 
     def num_enclosed(self):
         """ Return the number of positions that are actually enclosed by the loop. """
 
-        candidates = [cell.position for cell in itertools.chain.from_iterable(self.rows()) if self.is_inside_boundary(cell.position)]
+        candidates = [pair for pair in self.coordinate_pairs() if self.is_inside_boundary(pair)]
         enclosed = 0
         for candidate in candidates:
             # Shoot a ray in any direction, and count whether it crosses the pipe an odd or even number of times.
             # Odd = enclosed, even = not enclosed.
             x, y = candidate
-            if sum(1 for cell in self.row(y)[x+1:] if cell.contents.part_of_main_loop and cell.contents.ch in '|F7') % 2 == 1:
+            if sum(1 for cell in self.row(y)[x+1:] if cell.part_of_main_loop and cell.ch in '|F7') % 2 == 1:
                 enclosed += 1
 
         return enclosed

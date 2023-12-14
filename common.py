@@ -30,6 +30,11 @@ class GenericGrid:
             c = c % -max_count
         return c
 
+    def coordinate_pairs(self):
+        for y in range(self.row_count):
+            for x in range(self.col_count):
+                yield (x, y)
+
     def row(self, y) -> list[Any]:
         if y >= 0 and y < self.row_count:
             return self.data[y]

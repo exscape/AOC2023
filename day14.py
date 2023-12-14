@@ -5,8 +5,8 @@ from common import CharacterGrid
 class StoneGrid(CharacterGrid):
     def tilt(self):
         for x in range(self.col_count):
-            groups = [list(g) for _, g in itertools.groupby(self.col(x), lambda cell: cell.contents != '#')]
-            groups = [sorted(group, key=lambda x: x.contents, reverse=True) for group in groups]
+            groups = [list(g) for _, g in itertools.groupby(self.col(x), lambda cell: cell != '#')]
+            groups = [sorted(group, reverse=True) for group in groups]
             new_col = itertools.chain.from_iterable(groups) # flatten
 
             for y, cell in enumerate(new_col):
@@ -18,7 +18,7 @@ class StoneGrid(CharacterGrid):
             self.rotate()
 
     def north_beam_load(self):
-        return sum((self.row_count - y) * [c.contents for c in self.row(y)].count('O') for y in range(self.row_count))
+        return sum((self.row_count - y) * [c for c in self.row(y)].count('O') for y in range(self.row_count))
 
 def solve(lines):
     # Part 1
@@ -46,6 +46,6 @@ def solve(lines):
 if __name__=='__main__':
     lines = open('data/day14.txt').read().splitlines()
     print("This will take a while...")
-    part1, part2 = solve(lines)
+    part1, part2 = solve(lines) # type: ignore
     print(f"Part 1: {part1}")
     print(f"Part 2: {part2}")

@@ -1,26 +1,10 @@
-from typing import Any, Generic, TypeVar, Tuple
-
-class Cell:
-    def __init__(self, contents: Any, position = None):
-        self.contents = contents
-        self.position = position
-
-    def __repr__(self):
-        return f"{self.contents}"
-
-    def __eq__(self, other):
-        if other:
-            return self.contents == other.contents
-        else:
-            return False
-
-T = TypeVar('T', bound=Cell)
+from typing import Any, Tuple
 
 def taxicab_distance(from_: Tuple[int, int], to: Tuple[int, int]):
     return abs(from_[0] - to[0]) + abs(from_[1] - to[1])
 
-class GenericGrid(Generic[T]):
-    def __init__(self, data: list[list[T]], wrapping = False, default_value: Any = None):
+class GenericGrid:
+    def __init__(self, data: list[list[Any]], wrapping = False, default_value: Any = None):
         self.data = list(data)
         self.row_count = len(self.data)
         self.col_count = len(self.data[0]) if len(self.data) > 0 else 0
@@ -35,10 +19,7 @@ class GenericGrid(Generic[T]):
             return False
         if not (other.row_count == self.row_count and other.col_count == self.col_count):
             return False
-        for y in range(self.row_count):
-            if other.row(y) != self.row(y):
-                return False
-        return True
+        return self.data == other.data
 
     @classmethod
     def wrap_coordinate(cls, c, max_count):
@@ -49,7 +30,7 @@ class GenericGrid(Generic[T]):
             c = c % -max_count
         return c
 
-    def row(self, y) -> list[T|None]:
+    def row(self, y) -> list[Any]:
         if y >= 0 and y < self.row_count:
             return self.data[y]
         elif self.wrapping:
@@ -58,7 +39,7 @@ class GenericGrid(Generic[T]):
         else:
             return [None] * self.col_count
 
-    def col(self, x) -> list[T|None]:
+    def col(self, x) -> list[Any]:
         if x >= 0 and x < self.col_count:
             return [self.data[y][x] for y in range(self.row_count)]
         elif self.wrapping:
@@ -67,36 +48,33 @@ class GenericGrid(Generic[T]):
         else:
             return [None] * self.row_count
 
-    def rows(self) -> list[list[T]]:
+    def rows(self) -> list[list[Any]]:
         return self.data
 
-    def cols(self) -> list[list[T]]:
+    def cols(self) -> list[list[Any]]:
         return [list(x) for x in zip(*self.data)]
 
     def transpose(self):
         self.data = self.cols()
         self.row_count = len(self.data)
         self.col_count = len(self.data[0]) if len(self.data) > 0 else 0
-        self.recalculate_positions()
 
     def flip_horizontal(self):
         for y in range(self.row_count):
             self.data[y] = list(reversed(self.data[y]))
-        self.recalculate_positions()
 
     def flip_vertical(self):
         for x in range(self.col_count):
             rev = reversed(self.col(x))
             for y, c in enumerate(rev):
                 self.data[y][x] = c
-        self.recalculate_positions()
 
     def rotate(self):
         """ Rotate the grid 90 degrees, clockwise. """
         self.transpose()
         self.flip_horizontal()
 
-    def cell_at(self, position: Tuple[int, int]) -> T | None:
+    def cell_at(self, position: Tuple[int, int]):
         (x, y) = position
         if x >= 0 and y >= 0 and x < self.col_count and y < self.row_count:
             return self.data[y][x]
@@ -109,11 +87,7 @@ class GenericGrid(Generic[T]):
             # Not wrapping and out of bounds
             return None
 
-    def contents_at(self, position: Tuple[int, int]) -> Any:
-        cell = self.cell_at(position)
-        return cell.contents if cell else self.default_value
-
-    def neighbors(self, position: Tuple[int, int], include_diagonals=True) -> list[T | None]:
+    def neighbors(self, position: Tuple[int, int], include_diagonals=True) -> list[Any]:
         """ Return a list of all neighboring cells, wrapping or inserting default valued cells if needed. """
         cells = []
         (x, y) = position
@@ -135,7 +109,6 @@ class GenericGrid(Generic[T]):
         assert(len(new_cells) == self.col_count)
         self.data.insert(before_row, new_cells)
         self.row_count += 1
-        self.recalculate_positions()
 
     def insert_col(self, before_col, new_cells):
         assert(self.col_count >= before_col)
@@ -145,33 +118,15 @@ class GenericGrid(Generic[T]):
             self.data[y].insert(before_col, new_cells[y])
 
         self.col_count += 1
-        self.recalculate_positions()
-
-    def recalculate_positions(self):
-        """ Update the position value of each Cell """
-        for y in range(self.row_count):
-            for x in range(self.col_count):
-                cell = self.cell_at((x, y))
-                if cell:
-                    cell.position = (x, y)
 
 class CharacterGrid(GenericGrid):
     """ Each cell is one character, usually ASCII, created from a list of strings """
     def __init__(self, lines: list[str], wrapping = False, default_value = None):
-        data: list[list[Cell]] = []
-        for y, line in enumerate(lines):
-            row = list(map(Cell, list(line)))
-            for x, cell in enumerate(row):
-                cell.position = (x, y)
-            data.append(row)
-
+        data = [list(line) for line in lines]
         super().__init__(data, wrapping, default_value)
 
     def print(self):
         print(self.dump())
 
     def dump(self):
-        lines = []
-        for row in self.data:
-            lines.append(''.join(map(lambda c: c.contents, row)))
-        return '\n'.join(lines)
+        return '\n'.join([''.join(row) for row in self.data])

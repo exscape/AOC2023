@@ -1,14 +1,14 @@
 import itertools
-from common import CharacterGrid, Cell, taxicab_distance
+from common import CharacterGrid, taxicab_distance
 
 class GalaxyGrid(CharacterGrid):
     def find_empty_rows(self):
         return [i for i, row in enumerate(self.rows())
-                if all([cell.contents == '.' for cell in row])]
+                if all(cell == '.' for cell in row)]
 
     def find_empty_cols(self):
         return [i for i, col in enumerate(self.cols())
-                if all([cell.contents == '.' for cell in col])]
+                if all(cell == '.' for cell in col)]
 
     def expand(self):
         """ Duplicate empty rows and column to simulate dark energy expansion """
@@ -16,16 +16,16 @@ class GalaxyGrid(CharacterGrid):
         empty_cols = self.find_empty_cols()
 
         for r in reversed(empty_rows):
-            self.insert_row(r, [Cell('.') for _ in range(self.col_count)])
+            self.insert_row(r, ['.'] * self.col_count)
 
         for c in reversed(empty_cols):
-            self.insert_col(c, [Cell('.') for _ in range(self.row_count)])
+            self.insert_col(c, ['.'] * self.row_count)
 
 def solve_part1(lines):
     """ Actually expand the grid. I could of course use the part 2 solution here, too. """
     grid = GalaxyGrid(lines, wrapping=False, default_value='.')
     grid.expand()
-    galaxy_positions = [cell.position for cell in itertools.chain.from_iterable(grid.rows()) if cell.contents == '#']
+    galaxy_positions = [position for position in grid.coordinate_pairs() if grid.cell_at(position) == '#']
     galaxy_pairs = list(itertools.combinations(galaxy_positions, 2))
 
     return sum(taxicab_distance(a, b) for a, b in galaxy_pairs)
@@ -33,7 +33,7 @@ def solve_part1(lines):
 def solve_part2(lines):
     """ Simulate expansion by modifying the galaxy coordinates accordingly """
     grid = GalaxyGrid(lines, wrapping=False, default_value='.')
-    galaxy_positions = [cell.position for cell in itertools.chain.from_iterable(grid.rows()) if cell.contents == '#']
+    galaxy_positions = [position for position in grid.coordinate_pairs() if grid.cell_at(position) == '#']
 
     for r in reversed(grid.find_empty_rows()):
         for i in range(len(galaxy_positions)):

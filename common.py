@@ -87,9 +87,8 @@ class GenericGrid:
             # Not wrapping and out of bounds
             return None
 
-    def neighbors(self, position: Tuple[int, int], include_diagonals=True) -> list[Any]:
-        """ Return a list of all neighboring cells, wrapping or inserting default valued cells if needed. """
-        cells = []
+    def neighbor_coordinates(self, position: Tuple[int, int], include_diagonals=True) -> list[Tuple[int, int]]:
+        coordinate_pairs = []
         (x, y) = position
         for offset_y in (-1, 0, 1):
             for offset_x in (-1, 0, 1):
@@ -97,12 +96,14 @@ class GenericGrid:
                     continue
                 if not include_diagonals and abs(offset_x) == 1 and abs(offset_y) == 1:
                     continue
-                cells.append(cell := self.cell_at((x + offset_x, y + offset_y)))
-                if cell:
-                    assert(cell.position == (x + offset_x, y + offset_y))
+                coordinate_pairs.append((x + offset_x, y + offset_y))
 
-        assert(len(cells) == 8 if include_diagonals else 4)
-        return cells
+        assert(len(coordinate_pairs) == 8 if include_diagonals else 4)
+        return coordinate_pairs
+
+    def neighbors(self, position: Tuple[int, int], include_diagonals=True) -> list[Any]:
+        """ Return a list of all neighboring cells, wrapping or inserting default valued cells if needed. """
+        return [self.cell_at(coordinate_pair) for coordinate_pair in self.neighbor_coordinates(position, include_diagonals)]
 
     def insert_row(self, before_row, new_cells):
         assert(self.row_count >= before_row)

@@ -30,6 +30,16 @@ class GenericGrid(Generic[T]):
         self.wrapping = wrapping
         self.default_value = default_value
 
+    def __eq__(self, other):
+        if not isinstance(other, GenericGrid):
+            return False
+        if not (other.row_count == self.row_count and other.col_count == self.col_count):
+            return False
+        for y in range(self.row_count):
+            if other.row(y) != self.row(y):
+                return False
+        return True
+
     @classmethod
     def wrap_coordinate(cls, c, max_count):
         """ Transform a coordinate to allow for infinite wrapping, e.g. grid.row(-123) for a 50-row grid """
@@ -68,6 +78,23 @@ class GenericGrid(Generic[T]):
         self.row_count = len(self.data)
         self.col_count = len(self.data[0]) if len(self.data) > 0 else 0
         self.recalculate_positions()
+
+    def flip_horizontal(self):
+        for y in range(self.row_count):
+            self.data[y] = list(reversed(self.data[y]))
+        self.recalculate_positions()
+
+    def flip_vertical(self):
+        for x in range(self.col_count):
+            rev = reversed(self.col(x))
+            for y, c in enumerate(rev):
+                self.data[y][x] = c
+        self.recalculate_positions()
+
+    def rotate(self):
+        """ Rotate the grid 90 degrees, clockwise. """
+        self.transpose()
+        self.flip_horizontal()
 
     def cell_at(self, position: Tuple[int, int]) -> T | None:
         (x, y) = position
